@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+"""
+Maintain list of known file names (in .notweed) you expect to find in
+directory and consider everything else undesirable. The search is
+recursive, but exlusions are per directory.
+
+For example to keep track of stuff in $HOME and $XDG_CONFIG_HOME:
+
+    $ find ~/ -name .notweed
+    /home/ander/.config/.notweed
+    /home/ander/.notweed
+    $ tail ~/.notweed
+    .xsession-errors
+    .xsession-errors.old
+    .xsessionrc
+    Desktop
+    Documents
+    Downloads
+    Music
+    Pictures
+    Repos
+    Videos
+"""
+
+import os
+
+for root, dirs, files in os.walk(os.path.realpath(".")):
+    exclude_file = os.path.join(root, ".notweed")
+    if os.path.exists(exclude_file):
+        with open(exclude_file, encoding="utf-8") as file:
+            exclude = [line.strip() for line in file.readlines()]
+        exclude.append(os.path.basename(exclude_file))
+        for excluded in exclude:
+            if excluded in dirs:
+                dirs.remove(excluded)
+            if excluded in files:
+                files.remove(excluded)
+    for file in files:
+        print(os.path.join(root, file))
